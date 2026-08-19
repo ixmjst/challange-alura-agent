@@ -3,6 +3,8 @@
 Agente de perguntas e respostas sobre a documentação oficial da **Nova Horizonte Store**,
 construído em Python com Streamlit e a API Gemini do Google.
 
+**▶ Aplicação em produção:** https://challange-alura-agent-agnwdunhwhikjhfevazwik.streamlit.app/
+
 ---
 
 ## 1. Descrição geral do projeto
@@ -127,6 +129,16 @@ challange-alura-agent/
 
 ## 4. Instruções para executar o projeto
 
+### Utilizar a versão já publicada
+
+A aplicação está em produção no Streamlit Community Cloud e pode ser usada sem qualquer
+instalação:
+
+**https://challange-alura-agent-agnwdunhwhikjhfevazwik.streamlit.app/**
+
+Basta escrever a pergunta e carregar em **Perguntar**. Os passos seguintes destinam-se a
+quem queira correr ou modificar o projeto localmente.
+
 ### Pré-requisitos
 
 - Python 3.11 ou superior
@@ -194,7 +206,9 @@ Ao publicar, adicionar a chave em **Settings → Secrets**:
 GEMINI_API_KEY = "a_sua_chave_aqui"
 ```
 
-O código lê `st.secrets` automaticamente, sem qualquer alteração.
+O código lê `st.secrets` automaticamente, sem qualquer alteração. É desta forma que está
+publicada a instância em
+https://challange-alura-agent-agnwdunhwhikjhfevazwik.streamlit.app/
 
 ### Trocar o documento consultado
 
