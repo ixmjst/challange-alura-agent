@@ -12,9 +12,26 @@ text_saved=""
 for page in document.pages:
     print(page.extract_text())
     text_saved+=page.extract_text()
+    
+    
+question = "Como faço para solicitar férias?"
+
+prompt = f"""
+Você é um assistente que responde perguntas de colaboradores com base
+em documentos internos da empresa. Responda usando SOMENTE o documento
+abaixo. Se a resposta não estiver no documento, diga que não encontrou
+essa informação.
+
+DOCUMENTO:
+{text_saved}
+
+PERGUNTA:
+{question}
+"""
 answer= client.models.generate_content(
     model="gemini-3.7-flash",
-    contents="Explique o que eh Rag em uma frase simples"
+    contents=prompt
 )
 
 print(answer.text)
+
