@@ -13,29 +13,31 @@ path="politica_de_ferias_empresa.pdf"
 document=PdfReader(path)
 text_saved=""
 for page in document.pages:
-    print(page.extract_text())
     text_saved+=page.extract_text()
     
 
 
-question = st.text_input("Faça a sua pergunta")
+question = st.text_input("Faça uma pergunta")
+button=st.button("Perguntar")
 
-prompt = f"""
-Você é um assistente que responde perguntas de colaboradores com base
-em documentos internos da empresa. Responda usando SOMENTE o documento
-abaixo. Se a resposta não estiver no documento, diga que não encontrou
-essa informação.
+if ((question!="") and (button)) :        
+ prompt = f"""
+ Você é um assistente que responde perguntas de colaboradores com base
+ em documentos internos da empresa. Responda usando SOMENTE o documento
+ abaixo. Se a resposta não estiver no documento, diga que não encontrou
+ essa informação.
 
-DOCUMENTO:
-{text_saved}
+ DOCUMENTO:
+ {text_saved}
 
-PERGUNTA:
-{question}
-"""
-answer= client.models.generate_content(
+ PERGUNTA:
+ {question}
+ """
+ answer= client.models.generate_content(
     model="gemini-3.7-flash",
     contents=prompt
-)
+ )
 
-st.write(answer.text)
-print (f"Fonte:{path}")
+ st.write(answer.text)
+ st.write(f"Fonte:{path}")
+
