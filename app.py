@@ -7,7 +7,7 @@ from google import genai
 
 
 load_dotenv(".env")
-key_api=os.getenv("GEMINI_API_KEY")
+key_api = st.secrets.get("GEMINI_API_KEY", None) or os.getenv("GEMINI_API_KEY")
 client=genai.Client(api_key=key_api)
 path="politica_de_ferias_empresa.pdf"
 document=PdfReader(path)
@@ -40,4 +40,5 @@ if ((question!="") and (button)) :
 
  st.write(answer.text)
  st.write(f"Fonte:{path}")
+
 
