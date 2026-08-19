@@ -23,7 +23,7 @@ button=st.button("Perguntar")
 if ((question!="") and (button)) :        
  prompt = f"""
  Você é um assistente que responde perguntas de colaboradores com base
- em documentos internos da empresa. Responda usando SOMENTE o documento
+ em documentos internos da loja. Responda usando SOMENTE o documento
  abaixo. Se a resposta não estiver no documento, diga que não encontrou
  essa informação.
 
