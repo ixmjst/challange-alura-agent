@@ -9,7 +9,7 @@ from google import genai
 load_dotenv(".env")
 key_api = st.secrets.get("GEMINI_API_KEY", None) or os.getenv("GEMINI_API_KEY")
 client=genai.Client(api_key=key_api)
-path="politica_de_ferias_empresa.pdf"
+path="loja-online-docs/02_politica_de_reembolso_e_devolucoes.pdf"
 document=PdfReader(path)
 text_saved=""
 for page in document.pages:
