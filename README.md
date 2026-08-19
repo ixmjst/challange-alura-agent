@@ -1,25 +1,28 @@
 # challange-alura-agent
 
-Agente de perguntas e respostas sobre documentos internos da empresa, construído em Python
-com Streamlit e a API Gemini do Google.
+Agente de perguntas e respostas sobre a documentação oficial da **Nova Horizonte Store**,
+construído em Python com Streamlit e a API Gemini do Google.
 
 ---
 
 ## 1. Descrição geral do projeto
 
-Este projeto é um **assistente interno de Recursos Humanos**. O colaborador escreve uma
-pergunta em linguagem natural (por exemplo, *"Com quantos dias de antecedência devo pedir
-férias?"*) e o agente responde **exclusivamente com base no documento interno** carregado
-pela aplicação — neste caso, o ficheiro `politica_de_ferias_empresa.pdf` (Política de Férias
-da *Nova Horizonte, Lda.*).
+Este projeto é um **assistente de atendimento** para uma loja online. O utilizador escreve
+uma pergunta em linguagem natural (por exemplo, *"Como inicio um pedido de devolução?"*) e o
+agente responde **exclusivamente com base no documento oficial** carregado pela aplicação.
 
-O objetivo é resolver um problema comum nas organizações: as regras existem, estão escritas,
-mas ninguém as lê. Em vez de procurar manualmente num PDF de várias páginas, o colaborador
-pergunta e recebe a resposta.
+O documento atualmente ativo é a **Política de Reembolso e Devoluções**
+(`loja-online-docs/02_politica_de_reembolso_e_devolucoes.pdf`), definida na variável `path`
+em [app.py:12](app.py#L12). A pasta [loja-online-docs/](loja-online-docs/) contém cinco
+documentos da loja, que podem ser trocados alterando essa única linha.
+
+O objetivo é resolver um problema comum no comércio eletrónico: as regras existem, estão
+publicadas, mas ninguém as lê. Em vez de percorrer manualmente um PDF, a pessoa pergunta e
+recebe a resposta.
 
 Duas características definem o comportamento do agente:
 
-- **Resposta ancorada no documento.** As instruções do sistema obrigam o modelo a usar
+- **Resposta ancorada no documento.** As instruções do prompt obrigam o modelo a usar
   somente o conteúdo do PDF. Se a informação não constar do documento, o agente deve
   declarar que não a encontrou, em vez de inventar (reduzindo alucinações).
 - **Indicação da fonte.** Cada resposta é acompanhada do ficheiro que serviu de base,
@@ -45,7 +48,7 @@ documento é pequeno, o texto integral é injetado diretamente no prompt, dispen
 │                                                                  │
 │  1. load_dotenv(".env")        → carrega variáveis de ambiente   │
 │  2. st.secrets / os.getenv     → obtém a GEMINI_API_KEY          │
-│  3. PdfReader(path)            → lê o PDF                        │
+│  3. PdfReader(path)            → lê o PDF indicado em `path`     │
 │  4. page.extract_text()        → extrai o texto de cada página   │
 │  5. monta o prompt:                                              │
 │         instruções + DOCUMENTO (texto extraído) + PERGUNTA       │
@@ -77,11 +80,13 @@ documento é pequeno, o texto integral é injetado diretamente no prompt, dispen
 
 - **Ficheiro único (`app.py`).** O projeto foi consolidado num só módulo — a lógica do
   antigo `processador.py` foi reutilizada dentro da própria aplicação, evitando duplicação.
+- **Documento configurável numa linha.** Toda a base de conhecimento do agente depende da
+  variável `path`. Trocar de documento não exige qualquer outra alteração ao código.
 - **Chave de API com dupla origem.** A linha
   `st.secrets.get("GEMINI_API_KEY", None) or os.getenv("GEMINI_API_KEY")`
   permite que o mesmo código corra em ambiente local (com `.env`) e no Streamlit Community
   Cloud (com *secrets*), sem alterações.
-- **Sem base vetorial.** Para um documento desta dimensão, injetar o texto completo é mais
+- **Sem base vetorial.** Para documentos desta dimensão, injetar o texto completo é mais
   simples, mais barato de manter e evita erros de recuperação de fragmentos.
 - **Extração feita no arranque.** O PDF é lido uma vez quando o script corre, e não a cada
   pergunta.
@@ -105,11 +110,16 @@ Ficheiros do repositório:
 ```
 challange-alura-agent/
 ├── .devcontainer/
-│   └── devcontainer.json          # ambiente Python 3.11 + arranque automático do Streamlit
-├── .gitignore                     # inclui .env (a chave nunca é versionada)
-├── app.py                         # aplicação completa
-├── politica_de_ferias_empresa.pdf # documento interno consultado pelo agente
-├── requirements.txt               # dependências
+│   └── devcontainer.json                          # Python 3.11 + arranque automático do Streamlit
+├── loja-online-docs/                              # base documental da loja
+│   ├── 01_politica_de_privacidade.pdf
+│   ├── 02_politica_de_reembolso_e_devolucoes.pdf  # ← documento ativo
+│   ├── 03_faq.pdf
+│   ├── 04_guia_de_envios_e_entregas.pdf
+│   └── 05_termos_e_condicoes.pdf
+├── .gitignore                                     # inclui .env (a chave nunca é versionada)
+├── app.py                                         # aplicação completa
+├── requirements.txt                               # dependências
 └── README.md
 ```
 
@@ -186,42 +196,58 @@ GEMINI_API_KEY = "a_sua_chave_aqui"
 
 O código lê `st.secrets` automaticamente, sem qualquer alteração.
 
-### Utilizar outro documento
+### Trocar o documento consultado
 
-Substituir `politica_de_ferias_empresa.pdf` e atualizar a variável `path` em
-[app.py:12](app.py#L12).
+Alterar a variável `path` em [app.py:12](app.py#L12) para qualquer um dos ficheiros de
+[loja-online-docs/](loja-online-docs/):
+
+```python
+path = "loja-online-docs/04_guia_de_envios_e_entregas.pdf"
+```
+
+Guardar o ficheiro — o Streamlit recarrega automaticamente e o agente passa a responder
+com base no novo documento.
 
 ---
 
 ## 5. Exemplos de perguntas que o agente consegue responder
 
-Todas estas perguntas têm resposta no documento carregado:
+Com o documento ativo (**Política de Reembolso e Devoluções**), estas perguntas têm
+resposta no texto:
 
-**Sobre prazos e procedimentos**
-- Com quantos dias de antecedência devo pedir férias?
-- A quem devo apresentar o pedido de férias?
-- O meu pedido fica aprovado assim que o submeto?
-- Como faço para alterar um período de férias já aprovado?
+**Iniciar uma devolução**
+- Como inicio um pedido de devolução?
+- Que informações preciso de fornecer para devolver um produto?
+- Tenho de enviar fotografias do artigo?
+- Onde é que o processo de devolução deve ser iniciado?
 
-**Sobre critérios e regras**
-- Quais são os critérios usados para aprovar um pedido de férias?
-- A empresa pode alterar as minhas férias depois de aprovadas?
-- Esta política aplica-se a colaboradores contratados a termo?
-- O que acontece se a política estiver em conflito com a lei laboral?
+**Condições e casos especiais**
+- Em que condições o produto deve ser devolvido?
+- Os produtos personalizados seguem as mesmas regras de devolução?
+- A empresa pode pedir-me informações adicionais?
+- Recebi um produto com defeito — o que acontece a seguir?
+- Recebi um artigo diferente do que encomendei. O que posso fazer?
+- Que soluções a empresa pode oferecer num caso de produto danificado?
 
-**Sobre responsabilidades**
-- Quais são as minhas responsabilidades enquanto colaborador?
-- O que compete à empresa na gestão das férias?
-- Preciso de passar as minhas tarefas a alguém antes de sair de férias?
+**Reembolsos e custos**
+- De que forma recebo o reembolso?
+- O reembolso é feito no mesmo método de pagamento que usei?
+- Porque é que o reembolso pode demorar?
+- Quem suporta os custos da devolução?
 
-**Sobre o âmbito do documento**
+**Sobre o documento**
 - Qual é o objetivo desta política?
-- Quando entra em vigor esta política?
+- Quando foi este documento atualizado?
 
 **Perguntas fora do âmbito** (o agente deve recusar responder)
-- Quantos dias de férias tenho direito por ano?
-- Qual é o valor do subsídio de férias?
-- Posso vender dias de férias?
+- Quantos dias tenho para devolver um produto?
+- Qual é a morada para onde devo enviar a devolução?
+- Qual é o número de telefone do apoio ao cliente?
+- Quanto tempo demora a entrega de uma encomenda?
+- A loja envia para fora do país?
+
+> As três últimas pertencem a outros documentos da pasta (FAQ, guia de envios), o que
+> torna evidente o limite do agente: ele só conhece o ficheiro indicado em `path`.
 
 ---
 
@@ -231,64 +257,81 @@ Os exemplos abaixo ilustram o formato típico das respostas produzidas pela apli
 
 ---
 
-**Pergunta:** Com quantos dias de antecedência devo pedir férias?
+**Pergunta:** Como inicio um pedido de devolução?
 
-> De acordo com o documento, o colaborador deve apresentar o pedido de férias ao seu
-> superior hierárquico com, pelo menos, **15 dias de antecedência**, salvo em situações
-> excecionais devidamente justificadas. O período solicitado só é considerado aprovado
-> após confirmação formal do responsável competente.
+> De acordo com o documento, deve contactar o atendimento da Nova Horizonte Store e
+> indicar:
 >
-> Fonte: politica_de_ferias_empresa.pdf
+> - o **número do pedido**;
+> - o **motivo da devolução**.
+>
+> Quando lhe for solicitado, deverá ainda apresentar **fotografias ou outras evidências**.
+> O processo deve ser iniciado através dos canais oficiais da Nova Horizonte Store.
+>
+> Fonte: loja-online-docs/02_politica_de_reembolso_e_devolucoes.pdf
 
 ---
 
-**Pergunta:** Quais são os critérios usados para aprovar um pedido de férias?
+**Pergunta:** Recebi um produto com defeito. O que é que a loja faz?
 
-> O documento indica quatro critérios de aprovação:
+> Segundo o documento, quando o produto apresenta defeito, dano ou não corresponde ao
+> pedido, a empresa analisa o caso e, quando aplicável, providencia uma destas soluções:
 >
-> 1. **Continuidade do serviço** — deve ser assegurada a cobertura mínima das atividades
->    essenciais.
-> 2. **Equidade** — os pedidos são avaliados de forma justa entre os colaboradores.
-> 3. **Antecedência** — pedidos apresentados com maior antecedência permitem melhor
->    capacidade de planeamento.
-> 4. **Necessidades excecionais** — a empresa poderá ajustar períodos quando existirem
->    necessidades operacionais justificadas.
+> 1. **substituição** do artigo;
+> 2. **reparação**;
+> 3. **crédito**;
+> 4. **reembolso**.
 >
-> Fonte: politica_de_ferias_empresa.pdf
+> A empresa poderá solicitar informações adicionais para avaliar a ocorrência.
+>
+> Fonte: loja-online-docs/02_politica_de_reembolso_e_devolucoes.pdf
 
 ---
 
-**Pergunta:** A empresa pode obrigar-me a mudar as férias já aprovadas?
+**Pergunta:** De que forma recebo o reembolso e quanto tempo demora?
 
-> Segundo o documento, em situações de necessidade operacional devidamente fundamentada,
-> a empresa poderá solicitar a alteração do período de férias, procurando acordar uma
-> alternativa com o colaborador. Alterações a períodos previamente aprovados devem ser
-> comunicadas ao responsável hierárquico e ao departamento de Recursos Humanos.
+> Quando aprovado, o reembolso é processado pelo **meio de pagamento utilizado** na compra
+> ou por outro método permitido.
 >
-> Fonte: politica_de_ferias_empresa.pdf
+> Quanto ao tempo, o documento não indica um prazo em dias — refere apenas que **o prazo
+> pode depender da instituição financeira**.
+>
+> Fonte: loja-online-docs/02_politica_de_reembolso_e_devolucoes.pdf
 
 ---
 
-**Pergunta:** Quantos dias de férias tenho direito por ano?
+**Pergunta:** Quem paga os portes da devolução?
 
-> Não encontrei essa informação no documento. A política define as regras de planeamento,
-> solicitação e aprovação de férias, mas não especifica o número de dias de férias a que
-> cada colaborador tem direito — remetendo, nessa matéria, para a legislação laboral
-> aplicável.
+> O documento indica que a responsabilidade pelos custos de devolução **depende do motivo
+> da devolução e da legislação aplicável**. Não é especificada uma regra fixa sobre quem
+> suporta esses custos em cada situação.
 >
-> Fonte: politica_de_ferias_empresa.pdf
+> Fonte: loja-online-docs/02_politica_de_reembolso_e_devolucoes.pdf
 
 ---
 
-Este último exemplo demonstra o comportamento mais importante do agente: **admitir o que
-não sabe**. É essa restrição que torna o assistente utilizável num contexto de Recursos
-Humanos, onde uma resposta inventada sobre direitos laborais teria consequências reais.
+**Pergunta:** Quantos dias tenho para devolver um produto?
+
+> Não encontrei essa informação no documento. A Política de Reembolso e Devoluções descreve
+> como pedir a devolução, as condições gerais, o tratamento de produtos defeituosos e a
+> forma de processamento do reembolso, mas não indica um prazo em dias para efetuar a
+> devolução.
+>
+> Fonte: loja-online-docs/02_politica_de_reembolso_e_devolucoes.pdf
+
+---
+
+Os dois últimos exemplos demonstram o comportamento mais importante do agente: **não ir
+além do que o documento diz**. É essa restrição que torna o assistente utilizável num
+contexto de atendimento ao cliente, onde uma resposta inventada sobre prazos ou custos de
+devolução criaria uma expectativa que a loja não teria de cumprir.
 
 ---
 
 ## Limitações conhecidas
 
-- O agente consulta **um único documento**, definido de forma fixa no código.
+- O agente consulta **um único documento de cada vez**, definido de forma fixa no código —
+  os restantes ficheiros de `loja-online-docs/` só ficam acessíveis alterando `path`.
 - O documento inteiro é enviado em cada pergunta; para documentos grandes seria necessário
   adotar *chunking* e pesquisa por *embeddings*.
 - Não existe histórico de conversa — cada pergunta é independente das anteriores.
